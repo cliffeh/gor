@@ -31,5 +31,8 @@ go.work.sum
 # .idea/
 # .vscode/
 
-# generate binaries
+# temporary files
+/tmp
+
+# generated binaries
 bin/gor
