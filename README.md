@@ -1,2 +1,5 @@
 # gor
+
 a template golang webapp
+
+Based upon <https://blog.arcjet.com/building-a-minimalist-web-server-using-the-go-standard-library-tailwind-css/>
