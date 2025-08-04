@@ -2,10 +2,9 @@
 
 * add access logging middleware/configuration
 * static content example
-* different content-types?
 * containerization
-* Makefile
-* tests
+* build out the Makefile with more useful targets
+* tests!
 * GHA workflows
 * live-reloading server for development
-* command line flags/env vars for configs
+* have healthcheck endpoint information come from the server somehow?

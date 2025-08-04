@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log/slog"
 	"net/http"
 	"time"
@@ -10,14 +10,16 @@ import (
 )
 
 func main() {
-	// TODO make these parameters
-	host := "127.0.0.1"
-	port := 8080
+	bind := "0.0.0.0:8080"
+
+	flag.StringVar(&bind, "bind", bind, "interface and port to bind to")
+
+	flag.Parse()
 
 	mux := routes.InitMux()
 
 	s := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", host, port),
+		Addr:    bind,
 		Handler: mux,
 		// Recommended timeouts from
 		// https://blog.cloudflare.com/exposing-go-on-the-internet/
@@ -26,7 +28,7 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	slog.Info("Server listening", "host", host, "port", port)
+	slog.Info("Server listening", "bind", bind)
 
 	if err := s.ListenAndServe(); err != nil {
 		slog.Error("Server failed to start", "error", err)
