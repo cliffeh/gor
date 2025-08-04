@@ -10,6 +10,8 @@ func InitMux() *http.ServeMux {
 
 	// healthcheck endpoints
 	mux.HandleFunc("GET /healthz", getHealthz)
+	mux.HandleFunc("GET /livez", getLivez)
+	mux.HandleFunc("GET /readyz", getReadyz)
 
 	return mux
 }
