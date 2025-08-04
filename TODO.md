@@ -1,6 +1,7 @@
 # TODO
 
-* add healthz endpoints
+* add livez and readyz endpoints
+  * use a healthcheck struct!
 * add access logging middleware/configuration
 * static content example
 * different content-types?
