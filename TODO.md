@@ -1,6 +1,5 @@
 # TODO
 
-* add access logging middleware/configuration
 * static content example
 * containerization
 * tests!

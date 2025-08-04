@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cliffeh/gor/internal/middleware"
 	"github.com/cliffeh/gor/internal/routes"
 )
 
@@ -16,11 +17,12 @@ func main() {
 
 	flag.Parse()
 
-	mux := routes.InitMux()
+	handler := middleware.Logger(routes.InitMux())
+	// mux := routes.InitMux()
 
 	s := &http.Server{
 		Addr:    bind,
-		Handler: mux,
+		Handler: handler,
 		// Recommended timeouts from
 		// https://blog.cloudflare.com/exposing-go-on-the-internet/
 		ReadTimeout:  5 * time.Second,
