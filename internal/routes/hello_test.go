@@ -7,22 +7,6 @@ import (
 	"testing"
 )
 
-func TestHello(t *testing.T) {
-	msg := hello("")
-	want := "Hello, World!"
-	if msg != want {
-		t.Errorf(`hello("") = %s, want: %s`, msg, want)
-	}
-}
-
-func TestHelloName(t *testing.T) {
-	msg := hello("Gor")
-	want := "Hello, Gor!"
-	if msg != want {
-		t.Errorf(`hello("Gor") = %s, want: %s`, msg, want)
-	}
-}
-
 func TestGetHello(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(getHello))
 	defer ts.Close() // Ensure the server is closed after the test
@@ -33,7 +17,7 @@ func TestGetHello(t *testing.T) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status OK, got %s", resp.Status)
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -43,7 +27,7 @@ func TestGetHello(t *testing.T) {
 	responseBody := string(bodyBytes)
 
 	if responseBody != "Hello, World!" {
-		t.Errorf("handler returned unexpected body: got %v want %v",
+		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
 			responseBody, "Hello, World!")
 	}
 }
@@ -58,7 +42,7 @@ func TestGetHelloName(t *testing.T) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status OK, got %s", resp.Status)
+		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
@@ -68,7 +52,7 @@ func TestGetHelloName(t *testing.T) {
 	responseBody := string(bodyBytes)
 
 	if responseBody != "Hello, Gor!" {
-		t.Errorf("handler returned unexpected body: got %v want %v",
+		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
 			responseBody, "Hello, Gor!")
 	}
 }
