@@ -18,8 +18,8 @@ serve: $(AIR) ## run a live reloading development server
 $(AIR):
 	@go install github.com/air-verse/air@latest
 
-test: coverage.out ## run unit tests
-	go test -coverprofile=$< ./...
+test: ## run unit tests
+	@go test ./...
 .PHONY: test
 
 coverage: coverage.out ## generate a test coverage report
