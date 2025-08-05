@@ -1,58 +1,47 @@
 package routes
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-func TestGetHello(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(getHello))
-	defer ts.Close() // Ensure the server is closed after the test
-
-	resp, err := http.Get(ts.URL)
-	if err != nil {
-		t.Fatalf("Failed to make GET request: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
-	}
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Failed to read response body: %v", err)
-	}
-	responseBody := string(bodyBytes)
-
-	if responseBody != "Hello, World!" {
-		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
-			responseBody, "Hello, World!")
-	}
+var helloTests = []struct {
+	path       string
+	body       string
+	statusCode int
+}{
+	{path: "/hello", body: "Hello, World!", statusCode: 200},
+	{path: "/hello?name=Gor", body: "Hello, Gor!", statusCode: 200},
 }
 
-func TestGetHelloName(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(getHello))
-	defer ts.Close() // Ensure the server is closed after the test
+func TestHelloRoutes(t *testing.T) {
+	ts := httptest.NewServer(InitMux())
+	defer ts.Close() // Ensure the server is closed after the tests run
 
-	resp, err := http.Get(ts.URL + "?name=Gor")
-	if err != nil {
-		t.Fatalf("Failed to make GET request: %v", err)
-	}
+	for _, tt := range helloTests {
+		t.Run(fmt.Sprintf("GET %s", tt.path), func(t *testing.T) {
+			resp, err := http.Get(ts.URL + tt.path)
+			if err != nil {
+				t.Fatalf("Failed to make GET request: %v", err)
+			}
 
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
-	}
+			if resp.StatusCode != tt.statusCode {
+				t.Errorf("Expected status code %d, got %d", tt.statusCode, resp.StatusCode)
+			}
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Failed to read response body: %v", err)
-	}
-	responseBody := string(bodyBytes)
+			bodyBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("Failed to read response body: %v", err)
+			}
+			responseBody := string(bodyBytes)
 
-	if responseBody != "Hello, Gor!" {
-		t.Errorf("handler returned unexpected body: got '%v' want '%v'",
-			responseBody, "Hello, Gor!")
+			if responseBody != tt.body {
+				t.Errorf("handler returned unexpected body: got '%v' want '%v'",
+					responseBody, tt.body)
+			}
+		})
 	}
 }
