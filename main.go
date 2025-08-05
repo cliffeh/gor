@@ -3,25 +3,21 @@ package main
 import (
 	"flag"
 	"log/slog"
+	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/cliffeh/gor/internal/middleware"
 	"github.com/cliffeh/gor/internal/routes"
 )
 
-func main() {
-	bind := "0.0.0.0:8080"
+var listener net.Listener
 
-	flag.StringVar(&bind, "bind", bind, "interface and port to bind to")
-
-	flag.Parse()
-
+func runServer() error {
 	handler := middleware.Logger(routes.InitMux())
-	// mux := routes.InitMux()
 
 	s := &http.Server{
-		Addr:    bind,
 		Handler: handler,
 		// Recommended timeouts from
 		// https://blog.cloudflare.com/exposing-go-on-the-internet/
@@ -30,9 +26,29 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	slog.Info("Server listening", "bind", bind)
+	return s.Serve(listener)
+}
 
-	if err := s.ListenAndServe(); err != nil {
-		slog.Error("Server failed to start", "error", err)
+func main() {
+	bind := ":8080"
+
+	flag.StringVar(&bind, "bind", bind, "interface and port to bind to")
+
+	flag.Parse()
+
+	var err error
+	listener, err = net.Listen("tcp", bind)
+	if err != nil {
+		slog.Error("Failed to listen", "error", err)
+		os.Exit(1)
 	}
+
+	slog.Info("Listening on", "addr", listener.Addr())
+
+	err = runServer()
+	if err != nil {
+		slog.Error("Failed to run server", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("Server stopped")
 }
