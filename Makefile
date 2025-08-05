@@ -18,6 +18,14 @@ serve: $(AIR) ## run a live reloading development server
 $(AIR):
 	@go install github.com/air-verse/air@latest
 
+container: ## build a container image
+	@docker build -t gor .
+.PHONY: container
+
+container-serve: container ## run the containerized app
+	@docker run --rm -p 8080:8080 gor
+.PHONY: container-serve
+
 clean: ## clean up generated/temporary files
 	@rm -rf tmp
 .PHONY: clean
