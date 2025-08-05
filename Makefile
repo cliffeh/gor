@@ -18,6 +18,16 @@ serve: $(AIR) ## run a live reloading development server
 $(AIR):
 	@go install github.com/air-verse/air@latest
 
+test: coverage.out ## run unit tests
+	go test -coverprofile=$< ./...
+.PHONY: test
+
+coverage: coverage.out ## generate a test coverage report
+	@go tool cover -html=$<
+
+coverage.out: $(SOURCES)
+	@go test -coverprofile=$@ ./...
+
 container: ## build a container image
 	@docker build -t gor .
 .PHONY: container
@@ -27,7 +37,7 @@ container-serve: container ## run the containerized app
 .PHONY: container-serve
 
 clean: ## clean up generated/temporary files
-	@rm -rf tmp
+	@rm -rf coverage.out tmp
 .PHONY: clean
 
 realclean: clean ## clean up All the Things
