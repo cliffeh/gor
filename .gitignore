@@ -35,4 +35,4 @@ go.work.sum
 /tmp
 
 # generated binaries
-bin/gor
+/bin
