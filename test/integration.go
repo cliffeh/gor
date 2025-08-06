@@ -31,7 +31,7 @@ func main() {
 	}
 
 	lines := strings.Split(string(buf), "\n")
-	pieces := strings.Split(lines[0], " ")
+	pieces := strings.Split(lines[0], "=")
 	addr := pieces[len(pieces)-1]
 
 	resp, err := http.Get("http://" + addr + "/hello")

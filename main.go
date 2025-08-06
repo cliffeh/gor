@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -41,26 +41,28 @@ func main() {
 	go func() {
 		l, err := net.Listen("tcp", bind)
 		if err != nil {
-			log.Fatalf("Failed to listen on %s: %v", bind, err)
+			slog.Error("Failed to listen", "bind", bind, "error", err)
+			os.Exit(1)
 		}
-		log.Printf("Server listening on %s", l.Addr().String())
+		slog.Info("Server listening", "addr", l.Addr().String())
 
 		if err := s.Serve(l); err != http.ErrServerClosed {
-			log.Fatalf("Server failed to start: %v", err)
+			slog.Error("Server failed to start", "error", err)
 		}
 	}()
 
 	// Block until a signal is received
 	sig := <-quit
-	log.Println("Signal received (%v); shutting down server...", sig)
+	slog.Info("Signal received; shutting down server...", "signal", sig)
 
 	// Create a context with a timeout for graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel() // Release resources associated with the context
 
 	if err := s.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown failed: %v", err)
+		slog.Error("Server shutdown failed", "error", err)
+		os.Exit(1)
 	}
 
-	log.Printf("Server gracefully shut down.")
+	slog.Info("Server gracefully shut down.")
 }
