@@ -6,4 +6,4 @@
   * image build and push
 * deployment manifests
 * have healthcheck endpoint information come from the server somehow?
-* unit tests for main() are a bit hacky - make them a little more foolproof
+* clean up testing targets (it's a bit messy)

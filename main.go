@@ -1,20 +1,27 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"log/slog"
+	"log"
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/cliffeh/gor/internal/middleware"
 	"github.com/cliffeh/gor/internal/routes"
 )
 
-var listener net.Listener
+func main() {
+	bind := ":8080"
 
-func runServer() error {
+	flag.StringVar(&bind, "bind", bind, "interface and port to bind to")
+
+	flag.Parse()
+
 	handler := middleware.Logger(routes.InitMux())
 
 	s := &http.Server{
@@ -26,29 +33,34 @@ func runServer() error {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	return s.Serve(listener)
-}
+	// Create a channel to listen for OS signals
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 
-func main() {
-	bind := ":8080"
+	// Start the server in a goroutine
+	go func() {
+		l, err := net.Listen("tcp", bind)
+		if err != nil {
+			log.Fatalf("Failed to listen on %s: %v", bind, err)
+		}
+		log.Printf("Server listening on %s", l.Addr().String())
 
-	flag.StringVar(&bind, "bind", bind, "interface and port to bind to")
+		if err := s.Serve(l); err != http.ErrServerClosed {
+			log.Fatalf("Server failed to start: %v", err)
+		}
+	}()
 
-	flag.Parse()
+	// Block until a signal is received
+	sig := <-quit
+	log.Println("Signal received (%v); shutting down server...", sig)
 
-	var err error
-	listener, err = net.Listen("tcp", bind)
-	if err != nil {
-		slog.Error("Failed to listen", "error", err)
-		os.Exit(1)
+	// Create a context with a timeout for graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel() // Release resources associated with the context
+
+	if err := s.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %v", err)
 	}
 
-	slog.Info("Listening on", "addr", listener.Addr())
-
-	err = runServer()
-	if err != nil {
-		slog.Error("Failed to run server", "error", err)
-		os.Exit(1)
-	}
-	slog.Info("Server stopped")
+	log.Printf("Server gracefully shut down.")
 }

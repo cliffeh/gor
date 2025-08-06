@@ -4,12 +4,17 @@ BINARY = bin/gor
 GOPATH ?= $(HOME)/go
 AIR ?= $(GOPATH)/bin/air
 
+COVDIRS = cov/unit cov/int
+
 default: help
+
+$(COVDIRS):
+	@mkdir -p $@
 
 build: $(BINARY) ## build the application binary
 
 $(BINARY): $(SOURCES)
-	@go build -o $@
+	@go build -cover -o $@
 
 serve: $(AIR) ## run a live reloading development server
 	@$< -c .air.toml
@@ -22,11 +27,12 @@ test: ## run unit tests
 	@go test ./...
 .PHONY: test
 
-coverage: coverage.out ## generate a test coverage report
-	@go tool cover -html=$<
-
-coverage.out: $(SOURCES)
-	@go test -coverprofile=$@ ./...
+coverage: $(BINARY) cov/unit cov/int ## generate a test coverage report
+	go test -cover ./internal/... -args -test.gocoverdir="$(PWD)/cov/unit"
+	GOCOVERDIR="$(PWD)/cov/int" go run test/integration.go $(BINARY)
+	go tool covdata textfmt -i=./cov/unit,./cov/int -o cov/profile
+	go tool cover -func cov/profile
+.PHONY: coverage
 
 container: ## build a container image
 	@docker build -t gor .
@@ -37,11 +43,11 @@ container-serve: container ## run the containerized app
 .PHONY: container-serve
 
 clean: ## clean up generated/temporary files
-	@rm -rf coverage.out tmp
+	@rm -rf cov tmp
 .PHONY: clean
 
 realclean: clean ## clean up All the Things
-	@rm -rf $(BINARY)
+	@rm -rf bin
 .PHONY: realclean
 
 help: ## show this help (default)
