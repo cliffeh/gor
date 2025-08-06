@@ -14,10 +14,6 @@ var LevelNames = map[slog.Leveler]string{
 	LevelAccess: "ACCESS",
 }
 
-// func (l *slog.Logger) Access(msg string, args ...any) {
-// 	slog.Log(context.Background(), LevelAccess, msg, args...)
-// }
-
 type loggingResponseWriter struct {
 	http.ResponseWriter
 	headerWritten bool
