@@ -23,16 +23,23 @@ serve: $(AIR) ## run a live reloading development server
 $(AIR):
 	@go install github.com/air-verse/air@latest
 
-test: ## run unit tests
-	@go test ./...
-.PHONY: test
+unit-test: cov/unit.out ## run unit 
+	@go tool cover -func="$<"
+	@go tool cover -html="$<"
+.PHONY: unit-test
 
-coverage: $(BINARY) cov/unit cov/int ## generate a test coverage report
-	go test -cover ./internal/... -args -test.gocoverdir="$(PWD)/cov/unit"
-	GOCOVERDIR="$(PWD)/cov/int" go run test/integration.go $(BINARY)
-	go tool covdata textfmt -i=./cov/unit,./cov/int -o cov/profile
-	go tool cover -func cov/profile
-.PHONY: coverage
+cov/unit.out: cov/unit $(SOURCES)
+	@go test -cover ./internal/... -args -test.gocoverdir="$(PWD)/$<"
+	@go tool covdata textfmt -i="$<" -o="$@"
+
+integration-test: cov/int.out ## run integration tests
+	@go tool cover -func="$<"
+	@go tool cover -html="$<"
+.PHONY: integration-test
+
+cov/int.out: cov/int $(BINARY)
+	@GOCOVERDIR="$(PWD)/$<" go run test/integration.go $(BINARY)
+	@go tool covdata percent -i="$<" -o="$@"
 
 container: ## build a container image
 	@docker build -t gor .
