@@ -23,9 +23,21 @@ serve: $(AIR) ## run a live reloading development server
 $(AIR):
 	@go install github.com/air-verse/air@latest
 
-unit-test: cov/unit.out ## run unit 
+test: cov/combined.out ## run all tests
+	@echo
+	@echo "Combined test coverage:"
 	@go tool cover -func="$<"
-	@go tool cover -html="$<"
+#	@go tool cover -html="$<"
+.PHONY: test
+
+cov/combined.out: cov/unit.out cov/int.out
+	@go tool covdata textfmt -i="cov/unit,cov/int" -o="$@"
+
+unit-test: cov/unit.out ## run unit tests
+	@echo
+	@echo "Unit test coverage:"
+	@go tool cover -func="$<"
+#	@go tool cover -html="$<"
 .PHONY: unit-test
 
 cov/unit.out: cov/unit $(SOURCES)
@@ -33,8 +45,10 @@ cov/unit.out: cov/unit $(SOURCES)
 	@go tool covdata textfmt -i="$<" -o="$@"
 
 integration-test: cov/int.out ## run integration tests
+	@echo
+	@echo "Integration test coverage:"
 	@go tool cover -func="$<"
-	@go tool cover -html="$<"
+#	@go tool cover -html="$<"
 .PHONY: integration-test
 
 cov/int.out: cov/int $(BINARY)
