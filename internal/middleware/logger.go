@@ -67,7 +67,7 @@ func Logger(next http.Handler, w io.Writer) http.Handler {
 		next.ServeHTTP(lrw, r) // Serve the actual request
 		duration := time.Since(start)
 
-		logger.Log(ctx, LevelAccess, "", // empty message
+		logger.Log(ctx, LevelAccess, "", // msg is removed
 			"method", r.Method,
 			"path", r.URL.Path,
 			"addr", r.RemoteAddr,
