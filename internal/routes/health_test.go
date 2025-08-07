@@ -44,8 +44,8 @@ func TestHealthRoutes(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to unmarshal response body: %v", err)
 			}
-			if health.Status != tt.health.Status {
-				t.Errorf("Expected health status '%s', got '%v'", tt.health.Status, health.Status)
+			if health != tt.health {
+				t.Errorf("Expected health '%s', got '%v'", tt.health, health)
 			}
 		})
 	}
