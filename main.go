@@ -22,7 +22,9 @@ func main() {
 
 	flag.Parse()
 
-	handler := middleware.Logger(routes.InitMux(), os.Stderr)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	handler := middleware.Logger(routes.InitMux(), os.Stdout)
 
 	s := &http.Server{
 		Handler: handler,
@@ -41,28 +43,28 @@ func main() {
 	go func() {
 		l, err := net.Listen("tcp", bind)
 		if err != nil {
-			slog.Error("Failed to listen", "bind", bind, "error", err)
+			logger.Error("Failed to listen", "bind", bind, "error", err)
 			os.Exit(1)
 		}
-		slog.Info("Server listening", "addr", l.Addr().String())
+		logger.Info("Server listening", "addr", l.Addr().String())
 
 		if err := s.Serve(l); err != http.ErrServerClosed {
-			slog.Error("Server failed to start", "error", err)
+			logger.Error("Server failed to start", "error", err)
 		}
 	}()
 
 	// Block until a signal is received
 	sig := <-quit
-	slog.Info("Signal received; shutting down server...", "signal", sig)
+	logger.Info("Signal received; shutting down server...", "signal", sig)
 
 	// Create a context with a timeout for graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel() // Release resources associated with the context
 
 	if err := s.Shutdown(ctx); err != nil {
-		slog.Error("Server shutdown failed", "error", err)
+		logger.Error("Server shutdown failed", "error", err)
 		os.Exit(1)
 	}
 
-	slog.Info("Server gracefully shut down.")
+	logger.Info("Server gracefully shut down.")
 }

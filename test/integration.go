@@ -35,7 +35,7 @@ func main() {
 	// usage: go run integration.go /path/to/gor
 	// Execute a simple command and check for errors
 	cmd := exec.Command(os.Args[1], "-bind", "127.0.0.1:0")
-	stderr, err := cmd.StderrPipe()
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	buf := make([]byte, 1024)
-	_, err = stderr.Read(buf)
+	_, err = stdout.Read(buf)
 
 	if err != nil {
 		log.Fatalf("Failed to read command output: %v", err)
