@@ -17,4 +17,6 @@ COPY --from=builder /app/main .
 
 EXPOSE 8080
 
+USER nobody
+
 CMD ["./main"]
