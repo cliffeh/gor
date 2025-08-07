@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"context"
+	"io"
 	"log/slog"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -38,7 +38,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.headerWritten = true
 }
 
-func Logger(next http.Handler) http.Handler {
+func Logger(next http.Handler, w io.Writer) http.Handler {
 	opts := slog.HandlerOptions{
 		Level: LevelAccess,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -59,7 +59,7 @@ func Logger(next http.Handler) http.Handler {
 			return a
 		},
 	}
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &opts))
+	logger := slog.New(slog.NewTextHandler(w, &opts))
 	ctx := context.Background()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()

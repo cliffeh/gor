@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -11,7 +10,6 @@ import (
 
 func TestInitMux(t *testing.T) {
 	var buf bytes.Buffer
-	log.SetOutput(&buf) // Redirect log output
 
 	// Create a mock handler
 	mockHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +18,7 @@ func TestInitMux(t *testing.T) {
 	})
 
 	// Wrap the mock handler with the logging middleware
-	handlerToTest := Logger(mockHandler)
+	handlerToTest := Logger(mockHandler, &buf)
 
 	ts := httptest.NewServer(handlerToTest)
 	defer ts.Close() // Ensure the server is closed after the test
@@ -34,20 +32,35 @@ func TestInitMux(t *testing.T) {
 
 	// Assert the captured logs
 	fields := strings.Split(buf.String(), " ")
-	// 2025/08/05 08:26:38 [192.0.2.1:1234] GET /test HTTP/1.1 200 2 1.408µs
+	// time=2025-08-06T22:37:31.811-04:00 level=ACCESS method=GET path=/hello
+	// addr=127.0.0.1:34352 proto=HTTP/1.1 status=200 size=13 duration=22.499µs
 	if len(fields) < 9 {
-		t.Fatalf("Expected log format to contain at least 9 fields, got %d", len(fields))
+		t.Fatalf("Expected log to contain at least 9 fields, got %d (%v)", len(fields), fields)
 	}
-	if fields[3] != "GET" {
-		t.Errorf("Expected method to be 'GET', got '%s'", fields[3])
-	}
-	if fields[4] != "/test" {
-		t.Errorf("Expected path to be '/test', got '%s'", fields[4])
-	}
-	if fields[6] != "200" {
-		t.Errorf("Expected status code to 200, got '%s'", fields[6])
-	}
-	if fields[7] != "2" {
-		t.Errorf("Expected content length to be 2, got '%s'", fields[7])
+
+	for _, field := range fields {
+		pieces := strings.Split(field, "=")
+		switch pieces[0] {
+		case "level":
+			if pieces[1] != "ACCESS" {
+				t.Errorf("Expected log level ACCESS, got %s", pieces[1])
+			}
+		case "method":
+			if pieces[1] != "GET" {
+				t.Errorf("Expected method GET, got %s", pieces[1])
+			}
+		case "path":
+			if pieces[1] != "/test" {
+				t.Errorf("Expected path /test, got %s", pieces[1])
+			}
+		case "status":
+			if pieces[1] != "200" {
+				t.Errorf("Expected status 200, got %s", pieces[1])
+			}
+		case "size":
+			if pieces[1] != "2" {
+				t.Errorf("Expected size 2, got %s", pieces[1])
+			}
+		}
 	}
 }

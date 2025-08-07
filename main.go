@@ -22,7 +22,7 @@ func main() {
 
 	flag.Parse()
 
-	handler := middleware.Logger(routes.InitMux())
+	handler := middleware.Logger(routes.InitMux(), os.Stderr)
 
 	s := &http.Server{
 		Handler: handler,
