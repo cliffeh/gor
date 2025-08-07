@@ -20,7 +20,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/cliffeh/quartr
+          images: ghcr.io/cliffeh/gor
 
       # QEMU and buildx for multi-arch support
       - name: Set up QEMU
