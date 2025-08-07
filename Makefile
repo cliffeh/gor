@@ -29,7 +29,7 @@ unit-test: cov/unit.out ## run unit
 .PHONY: unit-test
 
 cov/unit.out: cov/unit $(SOURCES)
-	@go test -cover ./internal/... -args -test.gocoverdir="$(PWD)/$<"
+	@go test -cover ./... -args -test.gocoverdir="$(PWD)/$<"
 	@go tool covdata textfmt -i="$<" -o="$@"
 
 integration-test: cov/int.out ## run integration tests
