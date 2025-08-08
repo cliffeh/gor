@@ -1,0 +1,23 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/cliffeh/gor
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  tls:
+    enabled: true
+    hosts:
+      - gor
+
+nameOverride: ""
+fullnameOverride: ""
+
+env:
+  GOR_ENV: "production"
