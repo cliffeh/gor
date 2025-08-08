@@ -1,22 +1,20 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.24.2 AS builder
 
 WORKDIR /app
+COPY go.mod ./
 
-COPY go.mod go.sum ./
-
+ENV CGO_ENABLED=0
 RUN go mod download
 
 COPY . .
+RUN go build -o server main.go
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o main .
-
-# Final stage
-FROM alpine:latest
-
-COPY --from=builder /app/main .
+# Copy the server binary into a distroless container
+FROM gcr.io/distroless/static-debian12:nonroot
+COPY --from=builder /app/server /
 
 EXPOSE 8080
 
-USER nobody
+USER nonroot
 
-CMD ["./main"]
+CMD ["/server"]
