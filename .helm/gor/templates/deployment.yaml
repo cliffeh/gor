@@ -1,26 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: { { include "gor.fullname" . } }
-  labels: { { include "gor.labels" . | nindent 4 } }
+  name: {{ include "gor.fullname" . }}
+  labels: {{ include "gor.labels" . | nindent 4 }}
 spec:
-  replicas: { { .Values.replicaCount } }
+  replicas: {{ .Values.replicaCount }}
   selector:
-    matchLabels: { { include "gor.selectorLabels" . | nindent 6 } }
+    matchLabels: {{ include "gor.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      labels: { { include "gor.selectorLabels" . | nindent 8 } }
+      labels: {{ include "gor.selectorLabels" . | nindent 8 }}
     spec:
       containers:
-        - name: { { .Chart.Name } }
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:v{{ .Chart.AppVersion }}"
-          imagePullPolicy: { { .Values.image.pullPolicy } }
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: GOR_ENV
               value: "{{ .Values.env.GOR_ENV }}"
           ports:
             - name: http
-              containerPort: { { .Values.service.port } }
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
